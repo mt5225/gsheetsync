@@ -4,6 +4,10 @@ var mongoose = require('mongoose');
  * User Schema
  */
 const RecordSchema = new mongoose.Schema({
+    UUID: {
+        type: String,
+        required: true
+    },
     CustomerId: {
         type: String,
         required: true
@@ -48,6 +52,11 @@ const RecordSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    Comments: [{
+        time: Date,
+        content: String,
+        author: String,
+    }],
     createdAt: {
         type: Date,
         default: Date.now

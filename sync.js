@@ -1,4 +1,3 @@
-
 var promise = require('bluebird');
 var mongoose = require('mongoose');
 var fs = require('fs');
@@ -6,19 +5,21 @@ var readline = require('readline');
 var google = require('googleapis');
 var googleAuth = require('google-auth-library');
 var Record = require('./record.model');
+var OP = require('./op.model');
+var OPLOG = {
+  process: 0,
+  insert: 0,
+  updated: 0,
+  total: 0,
+}
 
 // plugin bluebird promise in mongoose
 mongoose.Promise = promise;
 
 // connect to mongo db
-mongoose.connect("mongodb://localhost/booking", { server: { socketOptions: { keepAlive: 1 } } });
+mongoose.connect("mongodb://localhost/calc2", { server: { socketOptions: { keepAlive: 1 } } });
 mongoose.connection.on('error', () => {
   throw new Error('unable to connect to database');
-});
-
-// clear database
-mongoose.connection.collections['records'].drop(function (err) {
-  console.log('collection dropped');
 });
 
 // If modifying these scopes, delete your previously saved credentials
@@ -120,8 +121,8 @@ function listAndSave(auth) {
   var sheets = google.sheets('v4');
   sheets.spreadsheets.values.get({
     auth: auth,
-    spreadsheetId: '17fPrQ7AGh1Rk1wzJVF74ZP8mn2IOR9rjdXFHcNPgXtA',
-    range: 'Sheet1!A2:K',
+    spreadsheetId: '1dBXBMPd9kVE4friH2u36_WK12fa_SRVnjFMc9dts2DI',
+    range: 'Sheet1!A2:L',
   }, function (err, response) {
     if (err) {
       console.log('The API returned an error: ' + err);
@@ -134,19 +135,29 @@ function listAndSave(auth) {
       var ops = [];
       for (var i = 0; i < rows.length; i++) {
         var row = rows[i];
-        if (row[1] && row[3] && row[4]) {
+        if (row[2] && row[4] && row[5]) {
           ops.push(saveToMongo(row));
         }
       }
       promise.all(ops).then(function () {
-        console.log("done, record process =  " + ops.length);
-        Record.count().then(
-          function (c) {
-            console.log("done, record inserted =  " + c);
-            process.exit();
+        OPLOG.process = ops.length;
+        var oplog = new OP({
+          process: OPLOG.process,
+          insert: OPLOG.insert,
+          updated: OPLOG.updated,
+          total: OPLOG.total,
+        })
+        oplog.save().then(
+          function (savedRecord) {
           }
-        )
-
+        ).catch(
+          function (e) {
+            console.log(row);
+            console.log(e);
+          }
+          ).finally(function () {
+            process.exit();
+          });
       });
     }
   });
@@ -157,30 +168,36 @@ function listAndSave(auth) {
  * save to mongo
  */
 function saveToMongo(row) {
-  var checkInDate = new Date(row[3].replace(/\./g, "/"));
-  var checkOutDate = new Date(row[4].replace(/\./g, "/"));
-  var totalNight = row[6] ? row[6] : "N/A";
-  var market = row[7] ? row[7] : "N/A";
-  var sales = row[8] ? row[8] : "N/A";
-  var op = row[9] ? row[9] : "N/A";
-  var op = row[9] ? row[9] : "N/A";
-  var nationality = row[10] ? row[10] : "N/A";
-  var record = new Record({
-    CustomerId: row[0],
-    Name: row[1],
+  var checkInDate = new Date(row[4].replace(/\./g, "/"));
+  var checkOutDate = new Date(row[5].replace(/\./g, "/"));
+  var totalNight = row[7] ? row[7] : "N/A";
+  var market = row[8] ? row[8] : "N/A";
+  var sales = row[9] ? row[9] : "N/A";
+  var op = row[10] ? row[10] : "N/A";
+  var nationality = row[11] ? row[11] : "N/A";
+  var record = {
+    UUID: row[0],
+    CustomerId: row[1],
+    Name: row[2],
     CheckIn: checkInDate,
     CheckOut: checkOutDate,
-    Room: row[5],
+    Room: row[6],
     TotalNight: totalNight,
     Market: market,
     Sales: sales,
     Operation: op,
     Nationality: nationality,
     Status: "N/A"
-  })
-  return record.save().then(
-    function (savedRecord) {
-      //console.log(savedRecord);
+  };
+  var query = { 'UUID': record.UUID };
+  return Record.findOneAndUpdate(query, record, { upsert: true }).then(
+    function (doc) {
+      OPLOG.total += 1;
+      if (doc) {
+        OPLOG.updated += 1;
+      } else {
+        OPLOG.insert += 1;
+      }
     }
   ).catch(
     function (e) {
