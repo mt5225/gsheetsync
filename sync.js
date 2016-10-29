@@ -121,7 +121,7 @@ function listAndSave(auth) {
   var sheets = google.sheets('v4');
   sheets.spreadsheets.values.get({
     auth: auth,
-    spreadsheetId: '1dBXBMPd9kVE4friH2u36_WK12fa_SRVnjFMc9dts2DI',
+    spreadsheetId: '1piuwDT6HIbenMTPA5G4-d9rGucuAhsRRIk4RstApdtw',
     range: 'Sheet1!A2:L',
   }, function (err, response) {
     if (err) {
@@ -187,7 +187,6 @@ function saveToMongo(row) {
     Sales: sales,
     Operation: op,
     Nationality: nationality,
-    Status: "N/A"
   };
   var query = { 'UUID': record.UUID };
   return Record.findOneAndUpdate(query, record, { upsert: true }).then(

@@ -51,6 +51,7 @@ const RecordSchema = new mongoose.Schema({
     Status: {
         type: String,
         required: true,
+        default: 'N/A'
     },
     Comments: [{
         time: Date,
