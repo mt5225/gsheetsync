@@ -176,9 +176,9 @@ function saveToMongo(row) {
   var op = row[10] ? row[10] : "N/A";
   var nationality = row[11] ? row[11] : "N/A";
   var record = {
-    UUID: row[0],
-    CustomerId: row[1],
-    Name: row[2],
+    UUID: row[2],
+    CustomerId: row[0],
+    Name: row[1],
     CheckIn: checkInDate,
     CheckOut: checkOutDate,
     Room: row[6],
