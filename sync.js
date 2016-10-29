@@ -113,7 +113,9 @@ function storeToken(token) {
   fs.writeFile(TOKEN_PATH, JSON.stringify(token));
   console.log('Token stored to ' + TOKEN_PATH);
 }
-
+/**
+ *  get rid of blank space
+ */
 function notBlankSpace(rows) {
   var rowNew = [];
   for (var i = 0; i < rows.length; i++) {
@@ -142,9 +144,7 @@ function listAndSave(auth) {
       var ops = [];
       for (var i = 0; i < rows.length; i++) {
         var row = rows[i];
-        if (row[2] && row[4] && row[5]) { //all record with checkin checkout
-          //get rid of blank space
-
+        if (row[1] && row[2] && row[4] && row[5] && row[6]) { //all record with checkin checkout
           ops.push(saveToMongo(notBlankSpace(row)));
         }
       }
