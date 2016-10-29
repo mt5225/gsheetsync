@@ -114,6 +114,13 @@ function storeToken(token) {
   console.log('Token stored to ' + TOKEN_PATH);
 }
 
+function notBlankSpace(rows) {
+  var rowNew = [];
+  for (var i = 0; i < rows.length; i++) {
+    rowNew[i] = rows[i].trim()
+  }
+  return rowNew
+}
 /**
  * sync to mongoDB
  */
@@ -135,8 +142,10 @@ function listAndSave(auth) {
       var ops = [];
       for (var i = 0; i < rows.length; i++) {
         var row = rows[i];
-        if (row[2] && row[4] && row[5]) {
-          ops.push(saveToMongo(row));
+        if (row[2] && row[4] && row[5]) { //all record with checkin checkout
+          //get rid of blank space
+
+          ops.push(saveToMongo(notBlankSpace(row)));
         }
       }
       promise.all(ops).then(function () {
