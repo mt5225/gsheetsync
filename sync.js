@@ -177,20 +177,20 @@ function listAndSave(auth) {
  * save to mongo
  */
 function saveToMongo(row) {
-  var checkInDate = new Date(row[4].replace(/\./g, "/"));
-  var checkOutDate = new Date(row[5].replace(/\./g, "/"));
-  var totalNight = row[7] ? row[7] : "N/A";
-  var market = row[8] ? row[8] : "N/A";
-  var sales = row[9] ? row[9] : "N/A";
-  var op = row[10] ? row[10] : "N/A";
-  var nationality = row[11] ? row[11] : "N/A";
+  var checkInDate = new Date(row[3].replace(/\./g, "/"));
+  var checkOutDate = new Date(row[4].replace(/\./g, "/"));
+  var totalNight = row[6] ? row[6] : "N/A";
+  var market = row[7] ? row[7] : "N/A";
+  var sales = row[8] ? row[8] : "N/A";
+  var op = row[9] ? row[9] : "N/A";
+  var nationality = row[10] ? row[10] : "N/A";
   var record = {
     UUID: row[2],
     CustomerId: row[0],
     Name: row[1],
     CheckIn: checkInDate,
     CheckOut: checkOutDate,
-    Room: row[6],
+    Room: row[5],
     TotalNight: totalNight,
     Market: market,
     Sales: sales,
